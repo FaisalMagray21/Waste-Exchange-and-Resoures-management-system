@@ -4,7 +4,6 @@ const dotenv = require('dotenv');
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30';
 
-// ✅ Register a new user
 exports.register = async (req, res) => {
   try {
     const { fullname, email, password, role } = req.body;
@@ -41,11 +40,9 @@ exports.login = async (req, res) => {
 
     const token = generateToken(user);
      res.status(200).json({ token, 
-    // user: { 
-      
-    //   fullname: user.fullname, email: user.email, role: user.role } });
+    
 user: {
-    _id: user._id,                 // ✅ add this line
+    _id: user._id,                 
     fullname: user.fullname,
     email: user.email,
     role: user.role

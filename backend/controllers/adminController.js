@@ -1,8 +1,8 @@
 const User = require('../models/User');
-//const Claim = require('../models/claimModel');
 const Item = require('../models/itemModel');
+const Notification=require('../models/notificationModel'); 
 
-// controllers/adminController.js
+
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find({}, '-password'); // exclude password
@@ -13,30 +13,10 @@ exports.getAllUsers = async (req, res) => {
 };
 
 
-// exports.getAllClaims = async (req, res) => {
-//   try {
-//     const claims = await Claim.find().populate('item requester');
-//     res.status(200).json(claims);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Error fetching claims', error: error.message });
-//   }
-// };
-
-// exports.updateClaimStatus = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const { status } = req.body;
-//     const updated = await Claim.findByIdAndUpdate(id, { status }, { new: true });
-//     res.status(200).json(updated);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Error updating claim', error: error.message });
-//   }
-// };
 
 
 
 
-// controllers/adminController.js
 exports.deleteUser = async (req, res) => {
   try {
     const deletedUser = await User.findByIdAndDelete(req.params.id);
@@ -48,11 +28,20 @@ exports.deleteUser = async (req, res) => {
 };
 
 
+
 exports.deleteItem = async (req, res) => {
   try {
-    const item = await Item.findByIdAndDelete(req.params.id);
+    const item = await Item.findById(req.params.id);
     if (!item) return res.status(404).json({ message: 'Item not found' });
-    res.json({ message: 'Item deleted successfully' });
+
+    await item.deleteOne();
+
+    await Notification.create({
+      userId: item.donorId || item.user, // adjust based on your model field
+      message: `Your item "${item.title}" was deleted by admin.`,
+    });
+
+    res.json({ message: 'Item deleted and donor notified.' });
   } catch (err) {
     res.status(500).json({ message: 'Error deleting item', error: err.message });
   }
@@ -61,7 +50,7 @@ exports.deleteItem = async (req, res) => {
 
 
 
-// controllers/adminController.js
+
 exports.getAllItems = async (req, res) => {
   try {
     const items = await Item.find().populate('user', 'fullname email');
@@ -72,19 +61,3 @@ exports.getAllItems = async (req, res) => {
 };
 
 
-// In adminController.js
-
-// exports.getDonorsWithItems = async (req, res) => {
-//   try {
-//     const donors = await User.find({ role: 'donor' });
-//     const donorsWithItems = await Promise.all(
-//       donors.map(async (donor) => {
-//         const items = await Item.find({ donorId: donor._id });
-//         return { ...donor.toObject(), items };
-//       })
-//     );
-//     res.json(donorsWithItems);
-//   } catch (err) {
-//     res.status(500).json({ message: 'Failed to fetch donors', error: err.message });
-//   }
-// };

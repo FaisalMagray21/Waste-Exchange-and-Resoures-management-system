@@ -7,6 +7,8 @@ const messageSchema = new mongoose.Schema({
   text: { type: String, required: true },
   senderName: { type: String },
   conversationId: { type: String, required: true },
+  deletedFor: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], 
+
 }, {
   timestamps: true,
 });

@@ -1,59 +1,33 @@
 const Notification = require('../models/notificationModel');
 
-exports.getNotifications = async (req, res) => {
+exports.getUserNotifications = async (req, res) => {
   try {
-    const notifications = await Notification.find({ user: req.user.id }).sort({ createdAt: -1 });
-    res.status(200).json(notifications);
+    if (!req.user || !req.user._id) {
+      console.log('❌ req.user is undefined or missing _id');
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    console.log('✅ Notification user ID:', req.user._id);
+
+    const notifications = await Notification.find({ userId: req.user._id }).sort({ createdAt: -1 });
+    res.json(notifications);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch notifications', error: err.message });
+    console.error('🔥 Notification fetch error:', err);
+    res.status(500).json({ error: err.message });
   }
 };
+
+
 
 exports.markAsRead = async (req, res) => {
   try {
-    const notification = await Notification.findById(req.params.id);
-    if (!notification) return res.status(404).json({ message: 'Notification not found' });
-    if (notification.user.toString() !== req.user.id) return res.status(403).json({ message: 'Not authorized' });
-
-    notification.isRead = true;
-    await notification.save();
-    res.status(200).json({ message: 'Marked as read', notification });
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to update notification', error: err.message });
-  }
-};
-
-exports.createNotification = async (data) => {
-  try {
-    const notification = new Notification(data);
-    await notification.save();
-    return notification;
-  } catch (err) {
-    console.error('Error creating notification:', err.message);
-  }
-};
-exports.markAllAsRead = async (req, res) => {
-  try {
-    await Notification.updateMany(
-      { user: req.user.id, isRead: false },
-      { $set: { isRead: true } }
+    const notification = await Notification.findByIdAndUpdate(
+      req.params.id,
+      { isRead: true },
+      { new: true }
     );
-    res.status(200).json({ message: 'All notifications marked as read' });
+    res.json(notification);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to update notifications', error: err.message });
+    res.status(500).json({ error: err.message });
   }
 };
-
-exports.deleteNotification = async (req, res) => {
-  try {
-    const notification = await Notification.findById(req.params.id);
-    if (!notification) return res.status(404).json({ message: 'Notification not found' });
-    if (notification.user.toString() !== req.user.id) return res.status(403).json({ message: 'Not authorized' });
-
-    await notification.deleteOne();
-    res.status(200).json({ message: 'Notification deleted' });
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to delete notification', error: err.message });
-  }
-};
-

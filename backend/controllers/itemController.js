@@ -35,7 +35,6 @@ exports.getItems = async (req, res) => {
   }
 };
 
-// Get items for logged-in user
 exports.getMyItems = async (req, res) => {
   try {
     const items = await Item.find({ user: req.user.id });
@@ -45,7 +44,6 @@ exports.getMyItems = async (req, res) => {
   }
 };
 
-// Delete item
 exports.deleteItem = async (req, res) => {
   try {
     const item = await Item.findById(req.params.id);
@@ -60,7 +58,6 @@ exports.deleteItem = async (req, res) => {
   }
 };
 
-// Get items by location
 exports.getItemsByLocation = async (req, res) => {
   try {
     const location = req.query.location;
@@ -76,7 +73,6 @@ exports.getItemsByLocation = async (req, res) => {
 
 
 
-// Unified search controller
 exports.searchItemsByNameAndLocation = async (req, res) => {
   try {
     const { name, location } = req.query;
